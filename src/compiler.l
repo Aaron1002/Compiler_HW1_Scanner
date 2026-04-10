@@ -47,6 +47,8 @@
 /* Define regular expression label */
 digit ("零")
 
+UTF8_BOM "\357\273\277"
+
 ASCII   [\x00-\x7f]
 U       [\x80-\xbf]
 
@@ -91,7 +93,9 @@ EXCLUDE_QUO [\x20-\x7E]|{B2}|{B3_1}|{B3_2_EXCLUDE_QUO}|{B3_3}|{B3_4}|{B4_1}|{B4_
 
 {digit}+ { /* use chinese_number.h to parse the number */ }
 
-\r?\n         { /* do something */ }
+[ \t]+      {}
+\r?\n       { updateNewline(); }
+{UTF8_BOM}  { updateNewline(); /* Skip UTF-8 BOM */ }
 
 <<EOF>>     { yyterminate(); }
 

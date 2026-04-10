@@ -1,9 +1,12 @@
-param(
+﻿param(
     [string]$File = "",
     [switch]$Interactive = $false,
     [switch]$StopOnFirstError = $false,
     [switch]$NoCompile = $false
 )
+
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 
 if (-not $NoCompile) {
     Write-Host "Compiling project..." -ForegroundColor Cyan
@@ -24,8 +27,8 @@ if (-not (Test-Path $lexer_exe)) {
 
 $test_dirs = @("test\策問", "test\殿試")
 $expected_dir = "test\對勘"
-$temp_out = ".\cmake-build-debug\temp_out.txt"
-$temp_expected = ".\cmake-build-debug\temp_expected.txt"
+$temp_out = ".\temp_out.txt"
+$temp_expected = ".\temp_expected.txt"
 
 $all_passed = $true
 $total_score = 0
