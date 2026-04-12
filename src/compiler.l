@@ -86,6 +86,10 @@ EXCLUDE_QUO [\x20-\x7E]|{B2}|{B3_1}|{B3_2_EXCLUDE_QUO}|{B3_3}|{B3_4}|{B4_1}|{B4_
  /* Rules section */
 %%
 
+"「「"        { BEGIN(IDENT_CON); }
+<IDENT_CON>"」」"       { BEGIN(INITIAL); }
+
+
 "「"        { BEGIN(IDENT_CON); yymore_utf8(); }
 <IDENT_CON>"」"    { BEGIN(INITIAL); PRINT_TOKEN("IDENT '%s'", trimStringToken(3)); }
 <IDENT_CON>\r?\n    { yymore_utf8(); }
@@ -101,6 +105,9 @@ EXCLUDE_QUO [\x20-\x7E]|{B2}|{B3_1}|{B3_2_EXCLUDE_QUO}|{B3_3}|{B3_4}|{B4_1}|{B4_
 
 {ALL_UTF8} { PRINT_TOKEN("UNKNOWN CHAR %s", yytext); }
 . { PRINT_TOKEN("UNKNOWN CHAR %s", yytext); }
+
+"注曰"       { printf("COMMENT 注曰\n");}
+
 
 %%
 /*  C Code section */
