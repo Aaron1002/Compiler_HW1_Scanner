@@ -13,6 +13,7 @@
 
     static inline void updateNewline() {
         // TODO: Update the line number and column number
+        yycolumnUtf8 = 1;
     }
 
     /* Calculates UTF-8 character length to update the column counters */
@@ -20,6 +21,8 @@
         yytextUtf8 = make_utf8_string(yytext);
         if (yytextUtf8.str) {
             // TODO: Calculate the column number
+            yycolumnUtf8++;
+            
         }
     }
 
@@ -45,7 +48,7 @@
 %}
 
 /* Define regular expression label */
-digit ("零")
+digit ("零")|("一")
 
 UTF8_BOM "\357\273\277"
 
@@ -89,13 +92,22 @@ EXCLUDE_QUO [\x20-\x7E]|{B2}|{B3_1}|{B3_2_EXCLUDE_QUO}|{B3_3}|{B3_4}|{B4_1}|{B4_
 "「「"        { BEGIN(IDENT_CON); }
 <IDENT_CON>"」」"       { BEGIN(INITIAL); }
 
+"注曰"       { printf("COMMENT 注曰\n");}
+"今有"       { printf("HERE_ARE 今有\n"); }
+"今"        { printf("SET 今\n"); }
 
 "「"        { BEGIN(IDENT_CON); yymore_utf8(); }
 <IDENT_CON>"」"    { BEGIN(INITIAL); PRINT_TOKEN("IDENT '%s'", trimStringToken(3)); }
 <IDENT_CON>\r?\n    { yymore_utf8(); }
 <IDENT_CON>{EXCLUDE_QUO}+    { yymore_utf8(); }
 
-{digit}+ { /* use chinese_number.h to parse the number */ }
+{digit}+ { 
+    /* use chinese_number.h to parse the number */ 
+    ScientificNotation sciOut;
+    if (!chineseToArabic(yytext, &sciOut)){
+        printf("NUMBER_LIT %i\n", sciToInt32(&sciOut));
+    }
+}
 
 [ \t]+      {}
 \r?\n       { updateNewline(); }
@@ -105,9 +117,6 @@ EXCLUDE_QUO [\x20-\x7E]|{B2}|{B3_1}|{B3_2_EXCLUDE_QUO}|{B3_3}|{B3_4}|{B4_1}|{B4_
 
 {ALL_UTF8} { PRINT_TOKEN("UNKNOWN CHAR %s", yytext); }
 . { PRINT_TOKEN("UNKNOWN CHAR %s", yytext); }
-
-"注曰"       { printf("COMMENT 注曰\n");}
-
 
 %%
 /*  C Code section */
