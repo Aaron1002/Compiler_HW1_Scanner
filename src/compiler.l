@@ -43,12 +43,14 @@
     char* trimStringToken(int paddLen) {
         static char cache[100];
         // TODO: Slice the string and copy
+        memcpy(cache, yytext, yyleng-paddLen);
+
         return cache;
     }
 %}
 
 /* Define regular expression label */
-digit ("零")|("一")
+digit ("零")|("一")|("二")
 
 UTF8_BOM "\357\273\277"
 
@@ -89,36 +91,45 @@ EXCLUDE_QUO [\x20-\x7E]|{B2}|{B3_1}|{B3_2_EXCLUDE_QUO}|{B3_3}|{B3_4}|{B4_1}|{B4_
  /* Rules section */
 %%
 
-"「「"        { printf("%i:%i: STR_LIT \"", yytokenLine-1, yycolumnUtf8); BEGIN(COMMENT); }
+"「「"        { printf("STR_LIT \""); BEGIN(COMMENT); }
 <COMMENT>"」」"     { printf("\"\n"); BEGIN(INITIAL); }
 <COMMENT>\n     { updateNewline(); printf("\n"); }
 <COMENT>\t      { printf("\t"); }
 
-"名之曰"     { printf("%i:%i: NAME_IT 名之曰\n", yytokenLine-1, yycolumnUtf8); }
-"注曰"       { printf("%i:%i: COMMENT 注曰\n", yytokenLine-1, yycolumnUtf8-1); }
-"今有"       { printf("%i:%i: HERE_ARE 今有\n", yytokenLine-1, yycolumnUtf8-1); }
-"今"        { printf("%i:%i: SET 今\n", yytokenLine-1, yycolumnUtf8); }
-"爻"        { printf("%i:%i: VAR_TYPE 爻\n", yytokenLine-1, yycolumnUtf8); }
+"名之曰"     { printf("NAME_IT 名之曰\n"); }
+"注曰"       { printf("COMMENT 注曰\n"); }
+"今有"       { printf("HERE_ARE 今有\n"); }
+"今"        { printf("SET 今\n"); }
+"爻"        { printf("VAR_TYPE 爻\n"); }
 "。"        {}
-"曰"        { printf("%i:%i: SAID 曰\n", yytokenLine-1, yycolumnUtf8); }
-"陰"        { printf("%i:%i: BOOL_LIT false\n", yytokenLine-1, yycolumnUtf8); }
+"曰"        { printf("SAID 曰\n"); }
+"陰"        { printf("BOOL_LIT false\n"); }
+"數"        { printf("VAR_TYPE 數\n"); }
+"有"        { printf("HERE_IS_A 有\n"); }
 
 
-"「"        { BEGIN(IDENT_CON); yymore_utf8(); }
+"「"        { BEGIN(IDENT_CON); }
 <IDENT_CON>"」"    { BEGIN(INITIAL); PRINT_TOKEN("IDENT '%s'", trimStringToken(3)); }
 <IDENT_CON>\r?\n    { yymore_utf8(); }
 <IDENT_CON>{EXCLUDE_QUO}+    { yymore_utf8(); }
+
+{digit}+·{digit}+  {
+    ScientificNotation sciOut;
+    if (!chineseToArabic(yytext, &sciOut)){
+        printf("NUMBER_LIT %s\n", sciToStr(&sciOut));
+    }
+}
 
 {digit}+ { 
     /* use chinese_number.h to parse the number */ 
     ScientificNotation sciOut;
     if (!chineseToArabic(yytext, &sciOut)){
-        printf("%i:%i: NUMBER_LIT %i\n", yytokenLine-1, yycolumnUtf8, sciToInt32(&sciOut));
+        printf("NUMBER_LIT %i\n", sciToInt32(&sciOut));
     }
 }
 
 [ \t]+      {}
-\r?\n       { updateNewline(); yymore_utf8(); }
+\r?\n       { updateNewline(); }
 {UTF8_BOM}  { updateNewline(); /* Skip UTF-8 BOM */ }
 
 <<EOF>>     { yyterminate(); }
