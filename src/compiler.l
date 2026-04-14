@@ -13,7 +13,7 @@
 
     static inline void updateNewline() {
         // TODO: Update the line number and column number
-        yytokenLine++;
+        
     }
 
     /* Calculates UTF-8 character length to update the column counters */
@@ -21,7 +21,7 @@
         yytextUtf8 = make_utf8_string(yytext);
         if (yytextUtf8.str) {
             // TODO: Calculate the column number
-            yycolumnUtf8++;            
+                       
         }
     }
 
@@ -30,7 +30,7 @@
         yymore();
         if (yytextUtf8.str) {
             // TODO: Reset column
-            yycolumnUtf8 = 1;
+            
         }
     }
 
@@ -43,7 +43,8 @@
     char* trimStringToken(int paddLen) {
         static char cache[100];
         // TODO: Slice the string and copy
-        memcpy(cache, yytext, yyleng-paddLen);
+        memset(cache, 0, sizeof(cache));
+        memcpy(cache, yytext, strlen(yytext)-paddLen);
 
         return cache;
     }
