@@ -30,7 +30,7 @@
         yymore();
         if (yytextUtf8.str) {
             // TODO: Reset column
-            
+            yycolumnUtf8 = 1;
         }
     }
 
@@ -94,14 +94,14 @@ EXCLUDE_QUO [\x20-\x7E]|{B2}|{B3_1}|{B3_2_EXCLUDE_QUO}|{B3_3}|{B3_4}|{B4_1}|{B4_
 <COMMENT>\n     { updateNewline(); printf("\n"); }
 <COMENT>\t      { printf("\t"); }
 
-"名之曰"     { printf("%i:%i: NAME_IT 名之曰\n", yytokenLine-1, yycolumnUtf8-1); }
+"名之曰"     { printf("%i:%i: NAME_IT 名之曰\n", yytokenLine-1, yycolumnUtf8); }
 "注曰"       { printf("%i:%i: COMMENT 注曰\n", yytokenLine-1, yycolumnUtf8-1); }
 "今有"       { printf("%i:%i: HERE_ARE 今有\n", yytokenLine-1, yycolumnUtf8-1); }
-"今"        { printf("%i:%i: SET 今\n", yytokenLine-1, yycolumnUtf8-1); }
-"爻"        { printf("%i:%i: VAR_TYPE 爻\n", yytokenLine-1, yycolumnUtf8-1); }
+"今"        { printf("%i:%i: SET 今\n", yytokenLine-1, yycolumnUtf8); }
+"爻"        { printf("%i:%i: VAR_TYPE 爻\n", yytokenLine-1, yycolumnUtf8); }
 "。"        {}
-"曰"        { printf("%i:%i: SAID 曰\n", yytokenLine-1, yycolumnUtf8-1); }
-"陰"        { printf("%i:%i: BOOL_LIT false\n", yytokenLine-1, yycolumnUtf8-1); }
+"曰"        { printf("%i:%i: SAID 曰\n", yytokenLine-1, yycolumnUtf8); }
+"陰"        { printf("%i:%i: BOOL_LIT false\n", yytokenLine-1, yycolumnUtf8); }
 
 
 "「"        { BEGIN(IDENT_CON); yymore_utf8(); }
@@ -113,12 +113,12 @@ EXCLUDE_QUO [\x20-\x7E]|{B2}|{B3_1}|{B3_2_EXCLUDE_QUO}|{B3_3}|{B3_4}|{B4_1}|{B4_
     /* use chinese_number.h to parse the number */ 
     ScientificNotation sciOut;
     if (!chineseToArabic(yytext, &sciOut)){
-        printf("NUMBER_LIT %i\n", sciToInt32(&sciOut));
+        printf("%i:%i: NUMBER_LIT %i\n", yytokenLine-1, yycolumnUtf8, sciToInt32(&sciOut));
     }
 }
 
 [ \t]+      {}
-\r?\n       { updateNewline(); }
+\r?\n       { updateNewline(); yymore_utf8(); }
 {UTF8_BOM}  { updateNewline(); /* Skip UTF-8 BOM */ }
 
 <<EOF>>     { yyterminate(); }
