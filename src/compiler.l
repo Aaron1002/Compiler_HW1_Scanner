@@ -13,7 +13,7 @@
 
     static inline void updateNewline() {
         // TODO: Update the line number and column number
-        yycolumnUtf8 = 1;
+        yytokenLine++;
     }
 
     /* Calculates UTF-8 character length to update the column counters */
@@ -21,8 +21,7 @@
         yytextUtf8 = make_utf8_string(yytext);
         if (yytextUtf8.str) {
             // TODO: Calculate the column number
-            yycolumnUtf8++;
-            
+            yycolumnUtf8++;            
         }
     }
 
@@ -31,6 +30,7 @@
         yymore();
         if (yytextUtf8.str) {
             // TODO: Reset column
+            
         }
     }
 
@@ -84,17 +84,25 @@ EXCLUDE_QUO [\x20-\x7E]|{B2}|{B3_1}|{B3_2_EXCLUDE_QUO}|{B3_3}|{B3_4}|{B4_1}|{B4_
 
 %option yylineno
 %x IDENT_CON
-
+%x COMMENT
 
  /* Rules section */
 %%
 
-"「「"        { BEGIN(IDENT_CON); }
-<IDENT_CON>"」」"       { BEGIN(INITIAL); }
+"「「"        { printf("%i:%i: STR_LIT \"", yytokenLine-1, yycolumnUtf8); BEGIN(COMMENT); }
+<COMMENT>"」」"     { printf("\"\n"); BEGIN(INITIAL); }
+<COMMENT>\n     { updateNewline(); printf("\n"); }
+<COMENT>\t      { printf("\t"); }
 
-"注曰"       { printf("COMMENT 注曰\n");}
-"今有"       { printf("HERE_ARE 今有\n"); }
-"今"        { printf("SET 今\n"); }
+"名之曰"     { printf("%i:%i: NAME_IT 名之曰\n", yytokenLine-1, yycolumnUtf8-1); }
+"注曰"       { printf("%i:%i: COMMENT 注曰\n", yytokenLine-1, yycolumnUtf8-1); }
+"今有"       { printf("%i:%i: HERE_ARE 今有\n", yytokenLine-1, yycolumnUtf8-1); }
+"今"        { printf("%i:%i: SET 今\n", yytokenLine-1, yycolumnUtf8-1); }
+"爻"        { printf("%i:%i: VAR_TYPE 爻\n", yytokenLine-1, yycolumnUtf8-1); }
+"。"        {}
+"曰"        { printf("%i:%i: SAID 曰\n", yytokenLine-1, yycolumnUtf8-1); }
+"陰"        { printf("%i:%i: BOOL_LIT false\n", yytokenLine-1, yycolumnUtf8-1); }
+
 
 "「"        { BEGIN(IDENT_CON); yymore_utf8(); }
 <IDENT_CON>"」"    { BEGIN(INITIAL); PRINT_TOKEN("IDENT '%s'", trimStringToken(3)); }
