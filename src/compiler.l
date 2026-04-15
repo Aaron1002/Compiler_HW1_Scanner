@@ -8,7 +8,8 @@
     #define YY_NO_UNPUT
     #define YY_NO_INPUT
 
-    int yycolumnUtf8, yylengUtf8, yytokenLine = 0;
+    int yycolumnUtf8, yylengUtf8 = 0;
+    int yytokenLine = 1;
     utf8_string yytextUtf8;
 
     static inline void updateNewline() {
@@ -39,7 +40,7 @@
     #define YY_USER_ACTION \
         processUtf8Char();
 
-    #define PRINT_TOKEN(format, ...) printf("%d:%d: " format "\n", yytokenLine, yycolumnUtf8 - yylengUtf8, __VA_ARGS__)
+    #define PRINT_TOKEN(format, ...) printf("%d:%d: " format "\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1, __VA_ARGS__)
 
     /* Extracts string from the current token by specified padding */
     char* trimStringToken(int paddLen) {
@@ -97,7 +98,7 @@ EXCLUDE_QUO [\x20-\x7E]|{B2}|{B3_1}|{B3_2_EXCLUDE_QUO}|{B3_3}|{B3_4}|{B4_1}|{B4_
 "「「"        { printf("%i:%i: STR_LIT \"", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); BEGIN(COMMENT); }
 <COMMENT>"」」"     { printf("\"\n"); BEGIN(INITIAL); }
 <COMMENT>\n     { updateNewline(); printf("\n"); }
-<COMENT>\t      { printf("\t"); }
+<COMMENT>\t      { printf("\t"); }
 
 "名之曰"     { printf("%i:%i: NAME_IT 名之曰\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1);  }
 "注曰"       { printf("%i:%i: COMMENT 注曰\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
@@ -133,7 +134,7 @@ EXCLUDE_QUO [\x20-\x7E]|{B2}|{B3_1}|{B3_2_EXCLUDE_QUO}|{B3_3}|{B3_4}|{B4_1}|{B4_
 
 [ \t]+      {}
 \r?\n       { updateNewline(); }
-{UTF8_BOM}  { updateNewline(); /* Skip UTF-8 BOM */ }
+{UTF8_BOM}  { yycolumnUtf8 -= yylengUtf8; /* Skip UTF-8 BOM */ }
 
 <<EOF>>     { yyterminate(); }
 
