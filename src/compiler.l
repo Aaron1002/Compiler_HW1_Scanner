@@ -8,12 +8,13 @@
     #define YY_NO_UNPUT
     #define YY_NO_INPUT
 
-    int yycolumnUtf8, yylengUtf8, yytokenLine = 1;
+    int yycolumnUtf8, yylengUtf8, yytokenLine = 0;
     utf8_string yytextUtf8;
 
     static inline void updateNewline() {
         // TODO: Update the line number and column number
-        
+        yytokenLine++;
+        yycolumnUtf8 = 0;
     }
 
     /* Calculates UTF-8 character length to update the column counters */
@@ -21,7 +22,8 @@
         yytextUtf8 = make_utf8_string(yytext);
         if (yytextUtf8.str) {
             // TODO: Calculate the column number
-                       
+            yylengUtf8 = utf8_char_count(yytextUtf8);
+            yycolumnUtf8 += yylengUtf8;
         }
     }
 
@@ -30,14 +32,14 @@
         yymore();
         if (yytextUtf8.str) {
             // TODO: Reset column
-            
+            yycolumnUtf8 -= yylengUtf8;
         }
     }
 
     #define YY_USER_ACTION \
-        processUtf8Char();
+        processUtf8Char();git clone --recurse-submodules
 
-    #define PRINT_TOKEN(format, ...) printf("%d:%d: " format "\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1, __VA_ARGS__)
+    #define PRINT_TOKEN(format, ...) printf("%d:%d: " format "\n", yytokenLine, yycolumnUtf8 - yylengUtf8, __VA_ARGS__)
 
     /* Extracts string from the current token by specified padding */
     char* trimStringToken(int paddLen) {
