@@ -100,20 +100,20 @@ EXCLUDE_QUO [\x20-\x7E]|{B2}|{B3_1}|{B3_2_EXCLUDE_QUO}|{B3_3}|{B3_4}|{B4_1}|{B4_
 <COMMENT>\n     { updateNewline(); printf("\n"); }
 <COMMENT>\t      { printf("\t"); }
 
-"名之曰"     { printf("%i:%i: NAME_IT 名之曰\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1);  }
-"注曰"       { printf("%i:%i: COMMENT 注曰\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
-"今有"       { printf("%i:%i: HERE_ARE 今有\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
-"今"        { printf("%i:%i: SET 今\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
-"爻"        { printf("%i:%i: VAR_TYPE 爻\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"名之曰"     { PRINT_TOKEN("NAME_IT %s", yytext); }
+"注曰"       { PRINT_TOKEN("COMMENT %s", yytext); }
+"今有"       { PRINT_TOKEN("HERE_ARE %s", yytext); }
+"今"        { PRINT_TOKEN("SET %s", yytext); }
+"爻"        { PRINT_TOKEN("VAR_TYPE %s", yytext); }
 "。"        {}
-"曰"        { printf("%i:%i: SAID 曰\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"曰"        { PRINT_TOKEN("SAID %s", yytext); }
 "陰"        { printf("%i:%i: BOOL_LIT false\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
-"數"        { printf("%i:%i: VAR_TYPE 數\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
-"有"        { printf("%i:%i: HERE_IS_A 有\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"數"        { PRINT_TOKEN("VAR_TYPE %s", yytext); }
+"有"        { PRINT_TOKEN("HERE_IS_A %s", yytext); }
 
 
 "「"        { BEGIN(IDENT_CON); }
-<IDENT_CON>"」"    { BEGIN(INITIAL); PRINT_TOKEN("IDENT '%s'", trimStringToken(3)); }
+<IDENT_CON>"」"    { BEGIN(INITIAL); printf("%d:%d: IDENT '%s'\n", yytokenLine, yycolumnUtf8 - yylengUtf8, trimStringToken(3)); }
 <IDENT_CON>\r?\n    { yymore_utf8(); }
 <IDENT_CON>{EXCLUDE_QUO}+    { yymore_utf8(); }
 
