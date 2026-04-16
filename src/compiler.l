@@ -126,6 +126,8 @@ EXCLUDE_QUO [\x20-\x7E]|{B2}|{B3_1}|{B3_2_EXCLUDE_QUO}|{B3_3}|{B3_4}|{B4_1}|{B4_
 "之長"      { PRINT_TOKEN("LENGTH %s", yytext); }
 "乃得"      { PRINT_TOKEN("RETURN %s", yytext); }
 "是謂"      { PRINT_TOKEN("FUNC_END_FOR %s", yytext); }
+"小於"      { printf("%i:%i: EXP_LOGIC <\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"批曰"      { PRINT_TOKEN("COMMENT %s", yytext); }
 "今"        { PRINT_TOKEN("SET %s", yytext); }
 "爻"        { PRINT_TOKEN("VAR_TYPE %s", yytext); }
 "。"         {}
@@ -153,11 +155,20 @@ EXCLUDE_QUO [\x20-\x7E]|{B2}|{B3_1}|{B3_2_EXCLUDE_QUO}|{B3_3}|{B3_4}|{B4_1}|{B4_
 "充"        { PRINT_TOKEN("PUSH %s", yytext); }
 "術"        { PRINT_TOKEN("VAR_TYPE_FUNC %s", yytext); }
 "施"        { PRINT_TOKEN("CALL %s", yytext); }
+"取"        { PRINT_TOKEN("TAKE %s", yytext); }
+"矣"        { PRINT_TOKEN("END %s", yytext); }
 
 "「"        { BEGIN(IDENT_CON); }
 <IDENT_CON>"」"    { BEGIN(INITIAL); printf("%d:%d: IDENT '%s'\n", yytokenLine, yycolumnUtf8 - yylengUtf8, trimStringToken(3)); }
 <IDENT_CON>\r?\n    { yymore_utf8(); }
 <IDENT_CON>{EXCLUDE_QUO}+    { yymore_utf8(); }
+
+{digit}+·"零"  {
+    ScientificNotation sciOut;
+    if (!chineseToArabic(yytext, &sciOut)){
+        printf("%i:%i: NUMBER_LIT %i\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1, sciToInt32(&sciOut));
+    }
+}
 
 {digit}+·{digit}+  {
     ScientificNotation sciOut;
