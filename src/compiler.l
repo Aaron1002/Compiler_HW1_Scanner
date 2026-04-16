@@ -54,7 +54,7 @@
 %}
 
 /* Define regular expression label */
-digit ("零")|("一")|("二")
+digit ("零")|("一")|("二")|("兩")|("三")|("四")|("五")|("六")|("七")|("八")|("九")|("十")|("百")|("千")
 
 UTF8_BOM "\357\273\277"
 
@@ -98,19 +98,61 @@ EXCLUDE_QUO [\x20-\x7E]|{B2}|{B3_1}|{B3_2_EXCLUDE_QUO}|{B3_3}|{B3_4}|{B4_1}|{B4_
 "「「"        { printf("%i:%i: STR_LIT \"", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); BEGIN(COMMENT); }
 <COMMENT>"」」"     { printf("\"\n"); BEGIN(INITIAL); }
 <COMMENT>\n     { updateNewline(); printf("\n"); }
-<COMMENT>\t      { printf("\t"); }
+<COMMENT>{EXCLUDE_QUO}+    { printf("%s", yytext); }
 
-"名之曰"     { PRINT_TOKEN("NAME_IT %s", yytext); }
-"注曰"       { PRINT_TOKEN("COMMENT %s", yytext); }
-"今有"       { PRINT_TOKEN("HERE_ARE %s", yytext); }
+"乃行是術曰"    { PRINT_TOKEN("FUNC_BEGIN %s", yytext); }
+"所餘幾何"  { printf("%i:%i: EXP_MATH_OP %%\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"中有陽乎"  { printf("%i:%i: EXP_LOGIC ||\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); } 
+"中無陰乎"  { printf("%i:%i: EXP_LOGIC &&\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"欲行是術"  { PRINT_TOKEN("TO_PERFORM_FUNC %s", yytext); }
+"名之曰"    { PRINT_TOKEN("NAME_IT %s", yytext); }
+"恆為是"    { PRINT_TOKEN("WHILE_TRUE %s", yytext); }
+"不小於"    { printf("%i:%i: EXP_LOGIC >=\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"必先得"    { PRINT_TOKEN("REQUIRE_ARGS %s", yytext); }
+"之術也"    { PRINT_TOKEN("FUNC_END %s", yytext); }
+"注曰"      { PRINT_TOKEN("COMMENT %s", yytext); }
+"今有"      { PRINT_TOKEN("HERE_ARE %s", yytext); }
+"昔之"      { PRINT_TOKEN("PAST %s", yytext); }
+"是矣"      { PRINT_TOKEN("IS_THUS %s", yytext); }
+"吾有"      { PRINT_TOKEN("HERE_ARE %s", yytext); }
+"書之"      { PRINT_TOKEN("PRINT %s", yytext); }
+"大於"      { printf("%i:%i: EXP_LOGIC >\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"等於"      { printf("%i:%i: EXP_LOGIC ==\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"若非"      { PRINT_TOKEN("ELSE %s", yytext); }
+"或若"      { PRINT_TOKEN("ELSE_IF %s", yytext); }
+"乃止"      { PRINT_TOKEN("BREAK %s", yytext); }
+"云云"      { PRINT_TOKEN("END %s", yytext); }
+"為是"      { PRINT_TOKEN("FOR %s", yytext); }
+"之長"      { PRINT_TOKEN("LENGTH %s", yytext); }
+"乃得"      { PRINT_TOKEN("RETURN %s", yytext); }
+"是謂"      { PRINT_TOKEN("FUNC_END_FOR %s", yytext); }
 "今"        { PRINT_TOKEN("SET %s", yytext); }
 "爻"        { PRINT_TOKEN("VAR_TYPE %s", yytext); }
-"。"        {}
+"。"         {}
 "曰"        { PRINT_TOKEN("SAID %s", yytext); }
 "陰"        { printf("%i:%i: BOOL_LIT false\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"陽"        { printf("%i:%i: BOOL_LIT true\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
 "數"        { PRINT_TOKEN("VAR_TYPE %s", yytext); }
 "有"        { PRINT_TOKEN("HERE_IS_A %s", yytext); }
-
+"言"        { PRINT_TOKEN("VAR_TYPE %s", yytext); }
+"者"        { PRINT_TOKEN("TOPIC %s", yytext); }
+"元"        { PRINT_TOKEN("VAR_TYPE %s", yytext); }
+"加"        { printf("%i:%i: EXP_MATH +\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"於"        { printf("%i:%i: <-\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"減"        { printf("%i:%i: EXP_MATH -\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"以"        { printf("%i:%i: ->\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"乘"        { printf("%i:%i: EXP_MATH *\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"除"        { printf("%i:%i: EXP_MATH /\n", yytokenLine, yycolumnUtf8 - yylengUtf8 + 1); }
+"其"        { PRINT_TOKEN("ITS %s", yytext); }
+"若"        { PRINT_TOKEN("IF %s", yytext); }
+"也"        { PRINT_TOKEN("END %s", yytext); }
+"夫"        { PRINT_TOKEN("THOSE %s", yytext); }
+"遍"        { PRINT_TOKEN("TIMES %s", yytext); }
+"之"        { PRINT_TOKEN("INDEX %s", yytext); }
+"列"        { PRINT_TOKEN("VAR_TYPE %s", yytext); }
+"充"        { PRINT_TOKEN("PUSH %s", yytext); }
+"術"        { PRINT_TOKEN("VAR_TYPE_FUNC %s", yytext); }
+"施"        { PRINT_TOKEN("CALL %s", yytext); }
 
 "「"        { BEGIN(IDENT_CON); }
 <IDENT_CON>"」"    { BEGIN(INITIAL); printf("%d:%d: IDENT '%s'\n", yytokenLine, yycolumnUtf8 - yylengUtf8, trimStringToken(3)); }
